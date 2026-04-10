@@ -477,8 +477,27 @@ window.addEventListener('load', function () {
 
     updateCard();
     updateTable();
+    applyPrintSettings();
     showNotification('Welcome! Start editing your ID card.');
 });
+
+// Print Settings Functionality
+function applyPrintSettings() {
+    const width = document.getElementById('cardWidth').value;
+    const height = document.getElementById('cardHeight').value;
+    const margins = document.getElementById('pageMargins').value;
+    const paper = document.getElementById('paperSize').value;
+    const orientation = document.getElementById('pageOrientation').value;
+
+    const root = document.documentElement;
+    root.style.setProperty('--card-width', `${width}in`);
+    root.style.setProperty('--card-height', `${height}in`);
+    root.style.setProperty('--page-margin', `${margins}in`);
+    root.style.setProperty('--page-size', paper);
+    root.style.setProperty('--page-orientation', orientation);
+
+    showNotification('Print settings applied!');
+}
 
 // Print Batch Functionality (front, back)
 function printBatch(side) {
