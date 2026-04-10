@@ -1,0 +1,829 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+h1 {
+    text-align: center;
+    color: white;
+    margin-bottom: 30px;
+    font-size: 2.5rem;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.main-layout {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 30px;
+    align-items: flex-start;
+}
+
+.edit-panel {
+    flex: 0 0 450px;
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.preview-panel {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 30px;
+    display: flex;
+    justify-content: center;
+}
+
+.edit-panel h2 {
+    color: #333;
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #555;
+    font-weight: 600;
+}
+
+.form-group input[type="text"] {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.3s;
+}
+
+.form-group input[type="text"]:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.form-group input[type="file"] {
+    width: 100%;
+    padding: 10px;
+    border: 2px dashed #e0e0e0;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.btn-update,
+.btn-save-all {
+    padding: 12px 25px;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-right: 10px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.btn-update {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-save-all {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    color: white;
+}
+
+.btn-update:hover,
+.btn-save-all:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 7px 14px rgba(0, 0, 0, 0.2);
+    filter: brightness(1.1);
+}
+
+.saved-records {
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.records-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.saved-records h2 {
+    color: #333;
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.btn-batch,
+.btn-print-front,
+.btn-print-back {
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.btn-batch {
+    background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+}
+
+.records-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.print-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-print-front {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.btn-print-back {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.btn-batch:hover,
+.btn-print-front:hover,
+.btn-print-back:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    filter: brightness(1.05);
+}
+
+.table-container {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+th,
+td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+th {
+    background-color: #f8f9fa;
+    color: #333;
+    font-weight: 600;
+}
+
+.btn-load,
+.btn-download-record,
+.btn-delete {
+    padding: 5px 12px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    margin-right: 5px;
+}
+
+.btn-load {
+    background: #4caf50;
+    color: white;
+}
+
+.btn-download-record {
+    background: #2196f3;
+    color: white;
+}
+
+.btn-delete {
+    background: #f44336;
+    color: white;
+}
+
+.btn-load:hover {
+    background: #43a047;
+}
+
+.btn-download-record:hover {
+    background: #1e88e5;
+}
+
+.btn-delete:hover {
+    background: #e53935;
+}
+
+.card-container {
+    display: flex;
+    gap: 30px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.id-card {
+    width: 400px;
+    height: 650px;
+    background: white;
+    border-radius: 0;
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    position: relative;
+    overflow: hidden;
+    border: 1.5px solid #000;
+}
+
+/* Front Card Styles */
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.logo {
+    width: 60px;
+    height: 60px;
+}
+
+.logo-center {
+    width: 80px;
+    height: 80px;
+}
+
+.company-name {
+    text-align: center;
+    font-size: 20px;
+    font-weight: 800;
+    color: #000;
+    margin-bottom: 2px;
+    letter-spacing: 0.5px;
+}
+
+.company-subtitle {
+    text-align: center;
+    font-size: 15px;
+    color: #000;
+    margin-bottom: 2px;
+}
+
+.company-location {
+    text-align: center;
+    font-size: 14px;
+    color: #000;
+    margin-bottom: 5px;
+}
+
+.photo-container {
+    width: 200px;
+    margin: 10px auto 0;
+    text-align: center;
+}
+
+.photo-container img {
+    width: 200px;
+    height: 200px;
+    object-fit: cover;
+    border: 1px solid #000;
+    display: block;
+    background-color: white;
+}
+
+.barcode {
+    background: white;
+    padding: 2px 0;
+    margin-top: 0;
+    width: 200px;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+}
+
+#barcode {
+    width: 100%;
+    height: 40px;
+    display: block;
+}
+
+.id-number-barcode {
+    text-align: center;
+    font-size: 12px;
+    font-weight: bold;
+    margin-top: 0;
+    color: #000;
+    letter-spacing: 0.5px;
+}
+
+.name-section {
+    text-align: center;
+    margin: 5px 0 5px 0;
+    padding: 0;
+}
+
+.label {
+    font-size: 10px;
+    font-weight: bold;
+    color: #000;
+    margin-bottom: 0;
+    margin-top: 2px;
+}
+
+.name-value {
+    font-size: 18px;
+    font-weight: bold;
+    color: #000;
+    line-height: 1.1;
+    text-transform: uppercase;
+    border-bottom: 1px solid #000;
+    padding-bottom: 0px;
+    display: inline-block;
+    min-width: 300px;
+}
+
+.signature-section {
+    text-align: center;
+    margin: 0;
+    padding: 0;
+}
+
+.signature-section img {
+    width: 150px;
+    height: 40px;
+    object-fit: contain;
+    margin: 0 auto -5px;
+    display: block;
+    position: relative;
+    z-index: 2;
+}
+
+.signature-label {
+    font-size: 12px;
+    font-weight: bold;
+    color: #000;
+    margin-top: 0;
+    border-top: 1px solid #000;
+    padding-top: 0;
+    display: inline-block;
+    min-width: 300px;
+}
+
+.position-badge {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #E60000;
+    color: white;
+    text-align: center;
+    padding: 12px 5px;
+    font-size: 25px;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+/* Back Card Styles */
+.id-card.back {
+    font-size: 12px;
+}
+
+.back-header {
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+.id-label {
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.id-value {
+    font-weight: bold;
+    font-size: 14px;
+    text-decoration: underline;
+    margin-left: 5px;
+}
+
+.notice-section {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.notice-section h3 {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.notice-section p {
+    font-size: 14px;
+    line-height: 1.4;
+    margin-bottom: 5px;
+    color: #000;
+}
+
+.notice-section .bold-text {
+    font-weight: 900;
+}
+
+.branch-info {
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.branch-info h4 {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.address-line,
+.operation-line {
+    font-size: 10px;
+    line-height: 1.5;
+    margin-bottom: 8px;
+}
+
+.address-label,
+.operation-label {
+    font-weight: bold;
+    font-size: 11px;
+}
+
+.address-text {
+    font-size: 10px;
+    text-decoration: underline;
+}
+
+.operation-text {
+    font-size: 10px;
+    text-decoration: underline;
+}
+
+.emergency-section {
+    margin-bottom: 20px;
+    padding: 10px 0;
+}
+
+.emergency-label {
+    font-size: 10px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.emergency-contact {
+    font-size: 15px;
+    font-weight: bold;
+    text-align: center;
+    padding: 0;
+    margin-bottom: 0;
+    text-transform: uppercase;
+}
+
+.emergency-phone {
+    font-size: 14px;
+    font-weight: 900;
+    text-align: center;
+    border-bottom: 1.5px solid #000;
+    padding-bottom: 2px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.certification-section {
+    margin-top: 15px;
+}
+
+.cert-item {
+    margin-bottom: 15px;
+}
+
+.cert-label {
+    font-size: 10px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.cert-item img {
+    width: 180px;
+    height: 60px;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto -15px auto;
+    /* Pull the name up to overlap with the signature */
+    position: relative;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.cert-name {
+    text-align: center;
+    font-size: 13px;
+    font-weight: 900;
+    border-top: 1.5px solid #000;
+    padding-top: 1px;
+    margin: -15px auto 2px auto;
+    width: 300px;
+    display: block;
+}
+
+.cert-title {
+    text-align: center;
+    font-size: 11px;
+    font-weight: 900;
+}
+
+.cert-subtitle {
+    text-align: center;
+    font-size: 10px;
+    font-weight: 900;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .main-layout {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .edit-panel {
+        flex: 1 1 100%;
+        width: 100%;
+        max-width: 600px;
+    }
+
+    .preview-panel {
+        width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .card-container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .id-card {
+        width: 100%;
+        max-width: 400px;
+    }
+
+    h1 {
+        font-size: 2rem;
+    }
+}
+
+/* Print Styles */
+#print-area {
+    display: none;
+}
+
+@media print {
+    @page {
+        size: A4;
+        margin: 0.25in;
+    }
+
+    body {
+        background: white;
+        padding: 0;
+        margin: 0;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    .container {
+        display: none !important;
+    }
+
+    #print-area {
+        display: block !important;
+        width: 210mm;
+        margin: 0;
+        padding: 0;
+        background: white;
+    }
+
+    .print-page {
+        width: 100%;
+        height: 11.19in; /* Available height for A4 (11.69) minus 0.5 margins */
+        padding: 0;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 1fr 1fr;
+        gap: 0.05in;
+        justify-items: center;
+        align-items: center;
+        page-break-after: always;
+        overflow: hidden;
+        position: relative;
+        box-sizing: border-box;
+    }
+
+    /* Reset card styles for printing to ensure alignment */
+    .print-page .id-card {
+        width: 3.84in !important;
+        height: 5.5in !important;
+        padding: 4mm !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        border: 0.5pt solid #ccc !important;
+        /* Light border for cutting */
+        position: relative !important;
+        display: flex !important;
+        flex-direction: column !important;
+        font-size: 8pt !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Scale down internal elements for print size */
+    .print-page .logo {
+        width: 15mm;
+        height: 15mm;
+    }
+
+    .print-page .logo-center {
+        width: 18mm;
+        height: 18mm;
+    }
+
+    .print-page .company-name {
+        font-size: 13pt;
+    }
+
+    .print-page .company-subtitle {
+        font-size: 10pt;
+    }
+
+    .print-page .company-location {
+        font-size: 9pt;
+    }
+
+    .print-page .photo-container {
+        width: 45mm;
+    }
+
+    .print-page .photo-container img {
+        width: 45mm;
+        height: 45mm;
+    }
+
+    .print-page .barcode {
+        width: 45mm;
+        margin-top: 1mm;
+    }
+
+    .print-page #barcode {
+        height: 8mm;
+    }
+
+    .print-page .id-number-barcode {
+        font-size: 7.5pt;
+    }
+
+    .print-page .name-section {
+        margin: 1mm 0;
+    }
+
+    .print-page .name-value {
+        font-size: 11pt;
+        min-width: 70mm;
+    }
+
+    .print-page .label {
+        font-size: 6.5pt;
+    }
+
+    .print-page .signature-section img {
+        width: 35mm;
+        height: 10mm;
+        margin-bottom: -1mm;
+    }
+
+    .print-page .signature-label {
+        font-size: 8pt;
+        min-width: 70mm;
+    }
+
+    .print-page .position-badge {
+        padding: 2mm 1mm;
+        font-size: 14pt;
+        background: #E60000 !important;
+        color: white !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    /* Back side print adjustments */
+    .print-page .id-card.back {
+        padding: 5mm 4mm !important;
+    }
+
+    .print-page .back-header {
+        margin-bottom: 2mm;
+        padding-bottom: 1mm;
+    }
+
+    .print-page .notice-section {
+        margin-bottom: 2mm;
+    }
+
+    .print-page .notice-section h3 {
+        font-size: 10pt;
+        margin-bottom: 1mm;
+    }
+
+    .print-page .notice-section p {
+        font-size: 8.5pt;
+        line-height: 1.2;
+        margin-bottom: 1mm;
+    }
+
+    .print-page .branch-info {
+        margin-bottom: 2mm;
+    }
+
+    .print-page .branch-info h4 {
+        font-size: 10pt;
+        margin-bottom: 1mm;
+    }
+
+    .print-page .address-line,
+    .print-page .operation-line {
+        font-size: 7pt;
+        line-height: 1.2;
+        margin-bottom: 1mm;
+    }
+
+    .print-page .emergency-section {
+        margin-bottom: 3mm;
+        padding: 2mm 0;
+    }
+
+    .print-page .emergency-contact {
+        font-size: 10pt;
+    }
+
+    .print-page .emergency-phone {
+        font-size: 9pt;
+        max-width: 100%;
+    }
+
+    .print-page .certification-section {
+        margin-top: 2mm;
+    }
+
+    .print-page .cert-item {
+        margin-bottom: 2mm;
+    }
+
+    .print-page .cert-item img {
+        width: 40mm;
+        height: 12mm;
+        margin-bottom: -3mm;
+    }
+
+    .print-page .cert-name {
+        font-size: 9pt;
+        width: 65mm;
+    }
+
+    .print-page .cert-title {
+        font-size: 8pt;
+    }
+
+    .print-page .cert-subtitle {
+        font-size: 7pt;
+    }
+}
