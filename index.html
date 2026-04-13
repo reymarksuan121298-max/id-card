@@ -96,9 +96,20 @@
                         <input type="number" id="cardWidth" value="3.84" step="0.01" onchange="applyPrintSettings()">
                     </div>
                     <div class="form-group">
-                        <label for="cardHeight">Height (in):</label>
                         <input type="number" id="cardHeight" value="5.50" step="0.01" onchange="applyPrintSettings()">
                     </div>
+                </div>
+
+                <hr class="separator small">
+
+                <h2>Bulk Incremental Print</h2>
+                <div class="form-group">
+                    <label for="bulkCount">Number of IDs to print:</label>
+                    <input type="number" id="bulkCount" value="100" min="1">
+                </div>
+                <div class="button-row">
+                    <button class="btn-print-front" style="flex: 1;" onclick="printBulk('front')">Bulk Fronts</button>
+                    <button class="btn-print-back" style="flex: 1;" onclick="printBulk('back')">Bulk Backs</button>
                 </div>
             </div>
 
@@ -106,92 +117,97 @@
             <div class="preview-panel">
                 <div class="card-container">
                     <!-- Front Side -->
-                    <div class="id-card front" id="cardFront">
-                        <div class="card-header">
-                            <img src="pcso1.png" alt="PCSO Logo" class="logo">
-                            <img src="glowing.png" alt="Glowing Fortune" class="logo-center">
-                            <img src="STL_256p.png" alt="STL Logo" class="logo">
-                        </div>
-
-                        <div class="company-name">GLOWING FORTUNE OPC</div>
-                        <div class="company-subtitle">PCSO STL Authorized Agent Corporation</div>
-                        <div class="company-location">PROVINCE OF LANAO DEL NORTE including ILIGAN CITY</div>
-
-                        <div class="photo-container">
-                            <img id="employeePhoto"
-                                src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' fill='%23e0e0e0'/%3E%3Ctext x='100' y='100' font-family='Arial' font-size='16' fill='%23999' text-anchor='middle' dominant-baseline='middle'%3E2x2 Photo%3C/text%3E%3C/svg%3E"
-                                alt="Employee Photo">
-                            <div class="barcode">
-                                <svg id="barcode"></svg>
+                    <div class="card-wrapper">
+                        <div class="id-card front" id="cardFront">
+                            <div class="card-header">
+                                <img src="pcso1.png" alt="PCSO Logo" class="logo">
+                                <img src="glowing.png" alt="Glowing Fortune" class="logo-center">
+                                <img src="STL_256p.png" alt="STL Logo" class="logo">
                             </div>
-                            <div class="id-number-barcode" id="idNumberBarcode">GF-LDN-00004</div>
-                        </div>
 
-                        <div class="name-section">
-                            <div class="name-value" id="nameDisplay">EMPLOYEE NAME</div>
-                            <div class="label">NAME</div>
-                        </div>
+                            <div class="company-name">GLOWING FORTUNE OPC</div>
+                            <div class="company-subtitle">PCSO STL Authorized Agent Corporation</div>
+                            <div class="company-location">PROVINCE OF LANAO DEL NORTE including ILIGAN CITY</div>
 
-                        <div class="signature-section">
-                            <img id="employeeSignature"
-                                src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='60' viewBox='0 0 200 60'%3E%3Ctext x='100' y='30' font-family='Arial' font-size='12' fill='%23999' text-anchor='middle' dominant-baseline='middle'%3E%3C/text%3E%3C/svg%3E"
-                                alt="Signature">
-                            <div class="signature-label">SIGNATURE</div>
-                        </div>
+                            <div class="photo-container">
+                                <img id="employeePhoto"
+                                    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' fill='%23ffffff'/%3E%3C/svg%3E"
+                                    alt="Employee Photo">
+                                <div class="barcode">
+                                    <svg id="barcode"></svg>
+                                </div>
+                                <div class="id-number-barcode" id="idNumberBarcode">GF-LDN-00004</div>
+                            </div>
 
-                        <div class="position-badge">SALES REPRESENTATIVE</div>
+                            <div class="name-section">
+                                <div class="name-value" id="nameDisplay">EMPLOYEE NAME</div>
+                                <div class="label">NAME</div>
+                            </div>
+
+                            <div class="signature-section">
+                                <img id="employeeSignature"
+                                    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='60' viewBox='0 0 200 60'%3E%3Ctext x='100' y='30' font-family='Arial' font-size='12' fill='%23999' text-anchor='middle' dominant-baseline='middle'%3E%3C/text%3E%3C/svg%3E"
+                                    alt="Signature">
+                                <div class="signature-label">SIGNATURE</div>
+                            </div>
+
+                            <div class="position-badge">SALES REPRESENTATIVE</div>
+                        </div>
                     </div>
 
                     <!-- Back Side -->
-                    <div class="id-card back" id="cardBack">
-                        <div class="back-header">
-                            <span class="id-label">ID NO.:</span>
-                            <span class="id-value" id="idNumberDisplay">GF-LDN-00004</span>
-                        </div>
-
-                        <div class="notice-section">
-                            <h3>NOTICE</h3>
-                            <p>This card is <span class="bold-text">NON-TRANSFERABLE;</span></p>
-                            <p class="bold-text">IN CASE OF LOSS, finder is requested to surrender this card to:</p>
-                        </div>
-
-                        <div class="branch-info">
-                            <h4>PCSO LANAO DEL NORTE BRANCH</h4>
-                            <p class="address-line">
-                                <span class="address-label">Address:</span>
-                                <span class="address-text">OSCA Building, zone 3B, Lanao, Chung Hua Road, Iligan City,
-                                    9200
-                                    Lanao Del Norte, Philippines</span>
-                            </p>
-                            <p class="operation-line">
-                                <span class="operation-label">Area of Operation:</span>
-                                <span class="operation-text">PROVINCE OF LANAO DEL NORTE/ILIGAN CITY</span>
-                            </p>
-                        </div>
-
-                        <div class="emergency-section">
-                            <p class="emergency-label">In case of emergency, please contact:</p>
-                            <div class="emergency-contact" id="emergencyContactDisplay">EMERGENCY CONTACT NAME</div>
-                            <div class="emergency-phone" id="emergencyPhoneDisplay">Contact Number</div>
-                        </div>
-
-                        <div class="certification-section">
-                            <div class="cert-item">
-                                <p class="cert-label">Certified by:</p>
-                                <img id="managerSignature" src="Jennifer Compania signature.png"
-                                    alt="Manager Signature">
-                                <div class="cert-name">JENNIFER S. COMPANIA</div>
-                                <div class="cert-title">OPERATING MANAGER</div>
+                    <div class="card-wrapper">
+                        <div class="id-card back" id="cardBack">
+                            <div class="back-header">
+                                <span class="id-label">ID NO.:</span>
+                                <span class="id-value" id="idNumberDisplay">GF-LDN-00004</span>
                             </div>
 
-                            <div class="cert-item">
-                                <p class="cert-label">Confirmed by:</p>
-                                <img id="headSignature"
-                                    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='40' viewBox='0 0 150 40'%3E%3Ctext x='75' y='20' font-family='Arial' font-size='10' fill='%23999' text-anchor='middle' dominant-baseline='middle'%3E%3C/text%3E%3C/svg%3E"
-                                    alt="Head Signature">
-                                <div class="cert-name">CHILBETH JEAN B. SAYA-ANG</div>
-                                <div class="cert-title">Branch Head</div>
-                                <div class="cert-subtitle">PCSO Lanao del Norte/Iligan City</div>
+                            <div class="notice-section">
+                                <h3>NOTICE</h3>
+                                <p>This card is <span class="bold-text">NON-TRANSFERABLE;</span></p>
+                                <p class="bold-text">IN CASE OF LOSS, finder is requested to surrender this card to:</p>
+                            </div>
+
+                            <div class="branch-info">
+                                <h4>PCSO LANAO DEL NORTE BRANCH</h4>
+                                <p class="address-line">
+                                    <span class="address-label">Address:</span>
+                                    <span class="address-text">OSCA Building, zone 3B, Lanao, Chung Hua Road, Iligan
+                                        City,
+                                        9200
+                                        Lanao Del Norte, Philippines</span>
+                                </p>
+                                <p class="operation-line">
+                                    <span class="operation-label">Area of Operation:</span>
+                                    <span class="operation-text">PROVINCE OF LANAO DEL NORTE/ILIGAN CITY</span>
+                                </p>
+                            </div>
+
+                            <div class="emergency-section">
+                                <p class="emergency-label">In case of emergency, please contact:</p>
+                                <div class="emergency-contact" id="emergencyContactDisplay">EMERGENCY CONTACT NAME</div>
+                                <div class="emergency-phone" id="emergencyPhoneDisplay">Contact Number</div>
+                            </div>
+
+                            <div class="certification-section">
+                                <div class="cert-item">
+                                    <p class="cert-label">Certified by:</p>
+                                    <img id="managerSignature" src="Jennifer Compania signature.png"
+                                        alt="Manager Signature">
+                                    <div class="cert-name">JENNIFER S. COMPANIA</div>
+                                    <div class="cert-title">OPERATING MANAGER</div>
+                                </div>
+
+                                <div class="cert-item">
+                                    <p class="cert-label">Confirmed by:</p>
+                                    <img id="headSignature"
+                                        src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='40' viewBox='0 0 150 40'%3E%3Ctext x='75' y='20' font-family='Arial' font-size='10' fill='%23999' text-anchor='middle' dominant-baseline='middle'%3E%3C/text%3E%3C/svg%3E"
+                                        alt="Head Signature">
+                                    <div class="cert-name">CHILBETH JEAN B. SAYA-ANG</div>
+                                    <div class="cert-title">Branch Head</div>
+                                    <div class="cert-subtitle">PCSO Lanao del Norte/Iligan City</div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -205,9 +221,13 @@
                 <h2>Saved ID Records</h2>
                 <button class="btn-batch" onclick="batchDownload()">Batch Download (ZIP)</button>
                 <div class="print-buttons">
-                    <button class="btn-print-front" onclick="printBatch('front')">Print Fronts (A4)</button>
-                    <button class="btn-print-back" onclick="printBatch('back')">Print Backs (A4)</button>
+                    <button class="btn-print-front" onclick="printBatch('front')">Batch Fronts (A4)</button>
+                    <button class="btn-print-back" onclick="printBatch('back')">Batch Backs (A4)</button>
                 </div>
+            </div>
+            <div class="filter-row">
+                <input type="text" id="searchRecords" placeholder="Search by name or ID number..."
+                    oninput="filterRecords()">
             </div>
             <div class="table-container">
                 <table id="idRecordsTable">

@@ -137,6 +137,24 @@ h1 {
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
 
+.filter-row {
+    margin-bottom: 15px;
+}
+
+.filter-row input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #eee;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.filter-row input:focus {
+    border-color: #667eea;
+}
+
 .records-header {
     display: flex;
     justify-content: space-between;
@@ -175,7 +193,8 @@ h1 {
     margin-bottom: 4px;
 }
 
-.settings-grid input, .settings-grid select {
+.settings-grid input,
+.settings-grid select {
     width: 100%;
     padding: 8px;
     border: 1px solid #ddd;
@@ -268,6 +287,11 @@ th {
     color: white;
 }
 
+.btn-print-item {
+    background: #673ab7;
+    color: white;
+}
+
 .btn-download-record {
     background: #2196f3;
     color: white;
@@ -306,8 +330,17 @@ th {
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
     position: relative;
     overflow: hidden;
-    border: 1.5px solid #000;
+    border: 1.25px solid #000;
 }
+
+.card-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+
 
 /* Front Card Styles */
 
@@ -370,7 +403,7 @@ th {
 .barcode {
     background: white;
     padding: 0;
-    margin-top: -2px;
+    margin-top: 4px;
     width: 200px;
     overflow: hidden;
     display: flex;
@@ -379,7 +412,7 @@ th {
 
 #barcode {
     width: 100%;
-    height: 40px;
+    height: 25px;
     display: block;
 }
 
@@ -394,7 +427,7 @@ th {
 
 .name-section {
     text-align: center;
-    margin: 5px 0 5px 0;
+    margin: 15px 0 10px 0;
     padding: 0;
 }
 
@@ -407,13 +440,13 @@ th {
 }
 
 .name-value {
-    font-size: 18px;
+    font-size: 22px;
     font-weight: bold;
     color: #000;
     line-height: 1.1;
     text-transform: uppercase;
     border-bottom: 1px solid #000;
-    padding-bottom: 0px;
+    padding-bottom: 2px;
     display: inline-block;
     min-width: 300px;
 }
@@ -553,8 +586,9 @@ th {
     font-weight: bold;
     text-align: center;
     padding: 0;
-    margin-bottom: 0;
+    margin-bottom: 5px;
     text-transform: uppercase;
+    min-height: 18px;
 }
 
 .emergency-phone {
@@ -565,6 +599,7 @@ th {
     padding-bottom: 2px;
     margin: 0 auto;
     width: 100%;
+    min-height: 16px;
 }
 
 .certification-section {
@@ -704,7 +739,7 @@ th {
         padding: 4mm !important;
         margin: 0 !important;
         box-shadow: none !important;
-        border: 0.5pt solid #ccc !important;
+        border: 1.25pt solid #000 !important;
         /* Light border for cutting */
         position: relative !important;
         display: flex !important;
@@ -747,11 +782,11 @@ th {
 
     .print-page .barcode {
         width: 45mm;
-        margin-top: -2px;
+        margin-top: 1mm;
     }
 
     .print-page #barcode {
-        height: 8mm;
+        height: 6mm;
     }
 
     .print-page .id-number-barcode {
@@ -759,11 +794,11 @@ th {
     }
 
     .print-page .name-section {
-        margin: 1mm 0;
+        margin: 3mm 0;
     }
 
     .print-page .name-value {
-        font-size: 11pt;
+        font-size: 14pt;
         min-width: 70mm;
     }
 
@@ -839,11 +874,14 @@ th {
 
     .print-page .emergency-contact {
         font-size: 10pt;
+        min-height: 12pt;
+        margin-bottom: 2mm;
     }
 
     .print-page .emergency-phone {
         font-size: 9pt;
         max-width: 100%;
+        min-height: 11pt;
     }
 
     .print-page .certification-section {
