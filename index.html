@@ -219,7 +219,14 @@
         <div class="saved-records">
             <div class="records-header">
                 <h2>Saved ID Records</h2>
-                <button class="btn-batch" onclick="batchDownload()">Batch Download (ZIP)</button>
+                <div style="display: flex; gap: 10px;">
+                    <input type="file" id="csvFileInput" accept=".csv" style="display: none;"
+                        onchange="importCSV(event)">
+                    <button class="btn-import-csv" onclick="document.getElementById('csvFileInput').click()">Import
+                        CSV</button>
+                    <button class="btn-batch" onclick="batchDownload()">Batch Download (ZIP)</button>
+                    <button class="btn-delete-all" onclick="deleteAllRecords()">Delete All</button>
+                </div>
                 <div class="print-buttons">
                     <button class="btn-print-front" onclick="printBatch('front')">Batch Fronts (A4)</button>
                     <button class="btn-print-back" onclick="printBatch('back')">Batch Backs (A4)</button>

@@ -204,7 +204,9 @@ h1 {
 
 .btn-batch,
 .btn-print-front,
-.btn-print-back {
+.btn-print-back,
+.btn-import-csv,
+.btn-delete-all {
     color: white;
     padding: 10px 20px;
     border: none;
@@ -217,6 +219,14 @@ h1 {
 
 .btn-batch {
     background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+}
+
+.btn-import-csv {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+}
+
+.btn-delete-all {
+    background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
 }
 
 .records-header {
@@ -241,7 +251,9 @@ h1 {
 
 .btn-batch:hover,
 .btn-print-front:hover,
-.btn-print-back:hover {
+.btn-print-back:hover,
+.btn-import-csv:hover,
+.btn-delete-all:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
     filter: brightness(1.05);

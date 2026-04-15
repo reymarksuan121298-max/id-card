@@ -359,8 +359,6 @@ function updateTable() {
             <td>${record.emergencyPhone}</td>
             <td>
                 <button class="btn-load" onclick="loadRecord(${index})">Load</button>
-                <button class="btn-print-item" onclick="printSingle(${index}, 'front')">P. Front</button>
-                <button class="btn-print-item" onclick="printSingle(${index}, 'back')">P. Back</button>
                 <button class="btn-download-record" onclick="downloadRecordFromTable(${index})">DL</button>
                 <button class="btn-delete" onclick="deleteRecord(${index})">Del</button>
             </td>
@@ -495,6 +493,20 @@ async function deleteRecord(index) {
                 showNotification('Cloud delete failed.');
             }
         }
+    }
+}
+
+async function deleteAllRecords() {
+    if (savedRecords.length === 0) {
+        showNotification('No records to delete.');
+        return;
+    }
+
+    if (confirm('Are you SURE you want to delete ALL records? This action cannot be undone!')) {
+        savedRecords = [];
+        localStorage.setItem('idRecords', JSON.stringify(savedRecords));
+        updateTable();
+        showNotification('All records deleted!');
     }
 }
 
@@ -895,4 +907,99 @@ function createPrintCard(record, side, uniqueId) {
         `;
     }
     return card;
+}
+
+function importCSV(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        const text = e.target.result;
+        parseAndSaveCSV(text);
+        // Clear input to allow importing the same file again if needed
+        event.target.value = '';
+    };
+    reader.readAsText(file);
+}
+
+function parseAndSaveCSV(csvText) {
+    // Split by any newline characters (Windows, Mac, or Linux style)
+    const rows = csvText.trim().split(/[\r\n]+/).filter(row => row.trim().length > 0);
+
+    if (rows.length < 2) {
+        alert("CSV import failed: The file must contain a header row and at least one data row. Rows found: " + rows.length);
+        console.log("CSV Content preview:", csvText.substring(0, 500));
+        return;
+    }
+
+    function parseCSVLine(line, delimiter = ',') {
+        const result = [];
+        let cur = '';
+        let inQuotes = false;
+        for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+            if (char === '"') {
+                inQuotes = !inQuotes;
+            } else if (char === delimiter && !inQuotes) {
+                result.push(cur.trim());
+                cur = '';
+            } else {
+                cur += char;
+            }
+        }
+        result.push(cur.trim());
+        return result;
+    }
+
+    // Attempt to auto-detect delimiter from the first row
+    let delimiter = ',';
+    if (rows[0].includes(';')) delimiter = ';';
+    else if (rows[0].includes('\t')) delimiter = '\t';
+
+    const headers = parseCSVLine(rows[0], delimiter).map(h => h.toUpperCase().replace(/^"|"$/g, ''));
+    let importedCount = 0;
+
+    for (let i = 1; i < rows.length; i++) {
+        // Skip empty lines
+        if (!rows[i].trim()) continue;
+
+        const columns = parseCSVLine(rows[i], delimiter).map(c => c.replace(/^"|"$/g, ''));
+
+        const record = {
+            idNumber: '',
+            name: '',
+            emergencyContact: '',
+            emergencyPhone: '',
+            photo: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' fill='%23ffffff'/%3E%3C/svg%3E",
+            signature: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='60' viewBox='0 0 200 60'%3E%3Ctext x='100' y='30' font-family='Arial' font-size='12' fill='%23999' text-anchor='middle' dominant-baseline='middle'%3E%3C/text%3E%3C/svg%3E",
+            managerSignature: "Jennifer Compania signature.png",
+            headSignature: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='40' viewBox='0 0 150 40'%3E%3Ctext x='75' y='20' font-family='Arial' font-size='10' fill='%23999' text-anchor='middle' dominant-baseline='middle'%3E%3C/text%3E%3C/svg%3E"
+        };
+
+        headers.forEach((header, index) => {
+            const val = columns[index] || '';
+            if (header.includes('ID NUMBER') || header === 'ID') record.idNumber = val;
+            if (header.includes("TELLER'S NAME") || header.includes('NAME')) record.name = val;
+            if (header.includes('CONTACT PERSON')) record.emergencyContact = val;
+            if (header.includes('CONTACT #') || header.includes('CONTACT INFO')) record.emergencyPhone = val;
+        });
+
+        if (record.idNumber) {
+            const idx = savedRecords.findIndex(r => r.idNumber === record.idNumber);
+            if (idx !== -1) {
+                savedRecords[idx].name = record.name || savedRecords[idx].name;
+                savedRecords[idx].emergencyContact = record.emergencyContact || savedRecords[idx].emergencyContact;
+                savedRecords[idx].emergencyPhone = record.emergencyPhone || savedRecords[idx].emergencyPhone;
+            } else {
+                // If it's totally new, push the entire record
+                savedRecords.push(record);
+            }
+            importedCount++;
+        }
+    }
+
+    localStorage.setItem('idRecords', JSON.stringify(savedRecords));
+    updateTable();
+    showNotification(`Successfully imported ${importedCount} records!`);
 }
