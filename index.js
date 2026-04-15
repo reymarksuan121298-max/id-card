@@ -920,7 +920,7 @@ function importCSV(event) {
         // Clear input to allow importing the same file again if needed
         event.target.value = '';
     };
-    reader.readAsText(file);
+    reader.readAsText(file, 'UTF-8');
 }
 
 function parseAndSaveCSV(csvText) {
