@@ -1029,7 +1029,6 @@ function parseAndSaveCSV(csvText) {
                 }
             }
         }
-
         if (record.idNumber) {
             const idx = savedRecords.findIndex(r => r.idNumber === record.idNumber);
             if (idx !== -1) {
