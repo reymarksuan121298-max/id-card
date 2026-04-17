@@ -882,7 +882,7 @@ function createPrintCard(record, side, uniqueId) {
                 <div class="label">NAME</div>
             </div>
             <div class="signature-section">
-                <img src="${record.signature}" alt="">
+                <img src="${record.signature}" alt="" onerror="this.style.visibility='hidden'" style="visibility: ${record.signature && !record.signature.startsWith('data:image/svg+xml') ? 'visible' : 'hidden'}">
                 <div class="signature-label">SIGNATURE</div>
             </div>
             <div class="position-badge">SALES REPRESENTATIVE</div>
@@ -923,7 +923,7 @@ function createPrintCard(record, side, uniqueId) {
                 </div>
                 <div class="cert-item">
                     <p class="cert-label">Confirmed by:</p>
-                    <img src="${record.headSignature || ''}" alt="">
+                    <img src="${record.headSignature || ''}" alt="" onerror="this.style.visibility='hidden'" style="visibility: ${record.headSignature && !record.headSignature.startsWith('data:image/svg+xml') ? 'visible' : 'hidden'}">
                     <div class="cert-name">CHILBETH JEAN B. SAYA-ANG</div>
                     <div class="cert-title">Branch Head</div>
                     <div class="cert-subtitle">PCSO Lanao del Norte/Iligan City</div>

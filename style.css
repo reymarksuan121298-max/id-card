@@ -791,7 +791,7 @@ th {
 
     .print-page .photo-container {
         width: 100%;
-        margin: 2mm 0;
+        margin: 1mm 0;
     }
 
     .print-page .photo-container img {
@@ -813,7 +813,7 @@ th {
     }
 
     .print-page .name-section {
-        margin: 2mm 0;
+        margin: 1mm 0;
     }
 
     .print-page .signature-section {
@@ -837,13 +837,13 @@ th {
     }
 
     .print-page .signature-label {
-        font-size: 8pt;
+        font-size: 11pt;
         min-width: 70mm;
     }
 
     .print-page .position-badge {
-        padding: 2mm 1mm;
-        font-size: 25px;
+        padding: 1.5mm 1mm;
+        font-size: 20px;
         background: #E60000 !important;
         color: white !important;
         -webkit-print-color-adjust: exact !important;
@@ -924,15 +924,15 @@ th {
     }
 
     .print-page .cert-name {
-        font-size: 9pt;
+        font-size: 10pt;
         width: 65mm;
     }
 
     .print-page .cert-title {
-        font-size: 8pt;
+        font-size: 9pt;
     }
 
     .print-page .cert-subtitle {
-        font-size: 7pt;
+        font-size: 8pt;
     }
 }
