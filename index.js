@@ -68,49 +68,68 @@ document.getElementById('photoUpload').addEventListener('change', function (e) {
     }
 });
 
-function processSignatureImage(imgSource, targetElementId) {
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.onload = function () {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        canvas.width = img.width;
-        canvas.height = img.height;
-        ctx.drawImage(img, 0, 0);
-
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const data = imageData.data;
-
-        // Improved background removal algorithm
-        for (let i = 0; i < data.length; i += 4) {
-            const r = data[i];
-            const g = data[i + 1];
-            const b = data[i + 2];
-
-            // Calculate brightness/intensity
-            const intensity = (r + g + b) / 3;
-            
-            // If the pixel is light (background), make it transparent
-            // Using a threshold of 180 and a smooth transition if possible, 
-            // but for simplicity, direct thresholding with a bit of "ink" preservation
-            if (intensity > 190) {
-                data[i + 3] = 0; // Fully transparent
-            } else {
-                // Enhance the ink: make non-transparent pixels slightly darker/sharper
-                const factor = 1.2;
-                data[i] = Math.max(0, data[i] * 0.8);
-                data[i+1] = Math.max(0, data[i+1] * 0.8);
-                data[i+2] = Math.max(0, data[i+2] * 0.8);
-            }
+// Helper function to process signature with Promise
+function processSignatureAsync(imgSource) {
+    return new Promise((resolve) => {
+        if (!imgSource || imgSource.startsWith('data:image/svg+xml')) {
+            resolve(imgSource);
+            return;
         }
 
-        ctx.putImageData(imageData, 0, 0);
-        const dataUrl = canvas.toDataURL('image/png');
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = function () {
+            try {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.drawImage(img, 0, 0);
+
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const data = imageData.data;
+
+                for (let i = 0; i < data.length; i += 4) {
+                    const r = data[i];
+                    const g = data[i + 1];
+                    const b = data[i + 2];
+                    const intensity = (r + g + b) / 3;
+
+                    // Aggressive thresholding for greyish backgrounds
+                    if (intensity > 190) {
+                        data[i + 3] = 0; // Fully transparent
+                    } else if (intensity < 150) {
+                        // Dark ink: make it pure black
+                        data[i] = 0; data[i + 1] = 0; data[i + 2] = 0;
+                    } else {
+                        // Mid-tones: sharpen significantly by pushing them toward black
+                        const val = (intensity - 150) * 5;
+                        const finalColor = Math.max(0, Math.min(255, val));
+                        data[i] = finalColor; data[i + 1] = finalColor; data[i + 2] = finalColor;
+                    }
+                }
+
+                ctx.putImageData(imageData, 0, 0);
+                resolve(canvas.toDataURL('image/png'));
+            } catch (err) {
+                console.warn("Signature processing failed (likely CORS/Security):", err);
+                resolve(imgSource);
+            }
+        };
+        img.onerror = () => {
+            console.error("Failed to load signature image:", imgSource);
+            resolve(imgSource);
+        };
+        img.src = imgSource;
+    });
+}
+
+function processSignatureImage(imgSource, targetElementId) {
+    processSignatureAsync(imgSource).then(dataUrl => {
         if (targetElementId) {
             document.getElementById(targetElementId).src = dataUrl;
         }
-    };
-    img.src = imgSource;
+    });
 }
 
 // Handle employee signature upload
@@ -476,18 +495,32 @@ function loadRecord(index) {
     document.getElementById('emergencyContact').value = record.emergencyContact;
     document.getElementById('emergencyPhone').value = record.emergencyPhone;
     document.getElementById('employeePhoto').src = record.photo;
-    
-    // Auto-clean signature background if it's an imported file path
+
+    // Auto-clean signature background and save it back to the record if it's a file path
     if (record.signature && (record.signature.includes('_signature/') || record.signature.endsWith('.png'))) {
-        processSignatureImage(record.signature, 'employeeSignature');
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = function () {
+            processSignatureImage(record.signature, 'employeeSignature');
+            // Give it a tiny moment to process and set the src
+            setTimeout(() => {
+                const processedSrc = document.getElementById('employeeSignature').src;
+                if (processedSrc.startsWith('data:image/png')) {
+                    savedRecords[index].signature = processedSrc;
+                    localStorage.setItem('idRecords', JSON.stringify(savedRecords));
+                }
+            }, 500);
+        };
+        img.src = record.signature;
     } else {
         document.getElementById('employeeSignature').src = record.signature;
     }
+
     if (record.managerSignature) document.getElementById('managerSignature').src = record.managerSignature;
     if (record.headSignature) document.getElementById('headSignature').src = record.headSignature;
 
     updateCard();
-    showNotification('Record loaded!');
+    showNotification('Record loaded and signature enhanced!');
 }
 
 async function deleteRecord(index) {
@@ -871,7 +904,9 @@ function createPrintCard(record, side, uniqueId) {
             <div class="company-subtitle">PCSO STL Authorized Agent Corporation</div>
             <div class="company-location">PROVINCE OF LANAO DEL NORTE including ILIGAN CITY</div>
             <div class="photo-container">
-                <img src="${record.photo}" alt="">
+                <div class="photo-box">
+                    <img src="${record.photo}" alt="" onerror="this.style.opacity='0'">
+                </div>
                 <div class="barcode">
                     <svg class="print-barcode-${uniqueId}"></svg>
                 </div>
@@ -939,16 +974,16 @@ function importCSV(event) {
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = function (e) {
+    reader.onload = async function (e) {
         const text = e.target.result;
-        parseAndSaveCSV(text);
+        await parseAndSaveCSV(text);
         // Clear input to allow importing the same file again if needed
         event.target.value = '';
     };
     reader.readAsText(file, 'UTF-8');
 }
 
-function parseAndSaveCSV(csvText) {
+async function parseAndSaveCSV(csvText) {
     // Split by any newline characters (Windows, Mac, or Linux style)
     const rows = csvText.trim().split(/[\r\n]+/).filter(row => row.trim().length > 0);
 
@@ -1009,24 +1044,30 @@ function parseAndSaveCSV(csvText) {
             if (header.includes('CONTACT PERSON')) record.emergencyContact = val;
             if (header.includes('CONTACT #') || header.includes('CONTACT INFO')) record.emergencyPhone = val;
             if (header.includes('PHOTO')) record.photo = val;
-            if (header.includes('SIGNATURE')) record.signature = val;
+            if (header.includes('SIGNATURE') || header.includes('IMPORT_SIGNATURE')) record.signature = val;
         });
 
         // Auto-match photos and signatures if not explicitly provided in CSV
         if (record.name && record.idNumber && (record.photo.startsWith('data:image/svg+xml') || record.signature.startsWith('data:image/svg+xml'))) {
             const isIligan = record.idNumber.startsWith('ILI-');
-            const isLanao = record.idNumber.startsWith('LA-') || record.idNumber.startsWith('LDN-') || record.idNumber.startsWith('STB-');
-            
-            const folderPrefix = isIligan ? 'iligan' : (isLanao ? 'lanao' : '');
-            
-            if (folderPrefix) {
-                // Construct paths based on the folder structure
-                if (record.photo.startsWith('data:image/svg+xml')) {
-                    record.photo = `${folderPrefix}_2x2/${record.name}.png`;
-                }
-                if (record.signature.startsWith('data:image/svg+xml')) {
-                    record.signature = `${folderPrefix}_signature/${record.name}.png`;
-                }
+            const isSTB = record.idNumber.startsWith('STB-');
+            const isLanao = record.idNumber.startsWith('LA-') || record.idNumber.startsWith('LDN-');
+
+            const folderPrefix = isIligan ? 'iligan' : (isSTB ? 'stb' : (isLanao ? 'lanao' : ''));
+
+            // Check if specific folders exist or just use import_ folders as primary if that's the current workflow
+            // Since the user explicitly asked for 'import_signature' folder recently, we prioritize it
+            if (record.signature.startsWith('data:image/svg+xml')) {
+                record.signature = `import_signature/${record.name}.png`;
+            }
+
+            // Immediately enhance signature on import
+            if (record.signature && !record.signature.startsWith('data:image')) {
+                record.signature = await processSignatureAsync(record.signature);
+            }
+
+            if (record.photo.startsWith('data:image/svg+xml')) {
+                record.photo = `import_2x2/${record.name}.png`;
             }
         }
         if (record.idNumber) {
