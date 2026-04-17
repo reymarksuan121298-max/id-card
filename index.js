@@ -21,7 +21,7 @@ function updateCard() {
             format: "CODE128",
             lineColor: "#000",
             width: 1.5,
-            height: 40,
+            height: 25,
             displayValue: false,
             margin: 0,
             background: "transparent"
@@ -52,16 +52,66 @@ document.getElementById('photoUpload').addEventListener('change', function (e) {
                 const ctx = canvas.getContext('2d');
                 canvas.width = img.width;
                 canvas.height = img.height;
+
+                // Ensure white background
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
                 ctx.drawImage(img, 0, 0);
 
                 document.getElementById('employeePhoto').src = canvas.toDataURL('image/png');
-                showNotification('Photo uploaded and converted to PNG!');
+                showNotification('Photo uploaded with white background!');
             };
             img.src = event.target.result;
         };
         reader.readAsDataURL(file);
     }
 });
+
+function processSignatureImage(imgSource, targetElementId) {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = function () {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
+
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+
+        // Improved background removal algorithm
+        for (let i = 0; i < data.length; i += 4) {
+            const r = data[i];
+            const g = data[i + 1];
+            const b = data[i + 2];
+
+            // Calculate brightness/intensity
+            const intensity = (r + g + b) / 3;
+            
+            // If the pixel is light (background), make it transparent
+            // Using a threshold of 180 and a smooth transition if possible, 
+            // but for simplicity, direct thresholding with a bit of "ink" preservation
+            if (intensity > 190) {
+                data[i + 3] = 0; // Fully transparent
+            } else {
+                // Enhance the ink: make non-transparent pixels slightly darker/sharper
+                const factor = 1.2;
+                data[i] = Math.max(0, data[i] * 0.8);
+                data[i+1] = Math.max(0, data[i+1] * 0.8);
+                data[i+2] = Math.max(0, data[i+2] * 0.8);
+            }
+        }
+
+        ctx.putImageData(imageData, 0, 0);
+        const dataUrl = canvas.toDataURL('image/png');
+        if (targetElementId) {
+            document.getElementById(targetElementId).src = dataUrl;
+        }
+    };
+    img.src = imgSource;
+}
 
 // Handle employee signature upload
 document.getElementById('signatureUpload').addEventListener('change', function (e) {
@@ -73,34 +123,8 @@ document.getElementById('signatureUpload').addEventListener('change', function (
         }
         const reader = new FileReader();
         reader.onload = function (event) {
-            const img = new Image();
-            img.onload = function () {
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d', { willReadFrequently: true });
-                canvas.width = img.width;
-                canvas.height = img.height;
-                ctx.drawImage(img, 0, 0);
-
-                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                const data = imageData.data;
-
-                // Remove white/light background
-                for (let i = 0; i < data.length; i += 4) {
-                    const r = data[i];
-                    const g = data[i + 1];
-                    const b = data[i + 2];
-
-                    // If the pixel is close to white (lightest shades)
-                    if (r > 200 && g > 200 && b > 200) {
-                        data[i + 3] = 0; // Make transparent
-                    }
-                }
-
-                ctx.putImageData(imageData, 0, 0);
-                document.getElementById('employeeSignature').src = canvas.toDataURL('image/png');
-                showNotification('Employee signature background removed!');
-            };
-            img.src = event.target.result;
+            processSignatureImage(event.target.result, 'employeeSignature');
+            showNotification('Employee signature processed (background removed)!');
         };
         reader.readAsDataURL(file);
     }
@@ -278,6 +302,9 @@ async function saveRecord() {
     updateTable();
     showNotification('Record saved locally!');
 
+    // 1.1 Auto-increment ID Number
+    const nextId = incrementIdNumber(record.idNumber);
+
     // 2. Save to Cloud (if URL provided)
     if (SCRIPT_URL) {
         showNotification('Syncing to Cloud...');
@@ -299,6 +326,19 @@ async function saveRecord() {
 
     // 3. Clear form for next entry
     resetForm();
+
+    // Set the auto-incremented ID
+    document.getElementById('idNumber').value = nextId;
+    updateCard(); // Refresh barcode
+    document.getElementById('employeeName').focus(); // Ready for next name
+}
+
+function incrementIdNumber(id) {
+    // Matches patterns like GF-LDN-00004 or simply 00004
+    return id.replace(/(\d+)$/, (match) => {
+        const val = parseInt(match, 10) + 1;
+        return val.toString().padStart(match.length, '0');
+    });
 }
 
 function resetForm() {
@@ -315,7 +355,7 @@ function resetForm() {
     document.getElementById('headSignatureUpload').value = '';
 
     // Reset Images to placeholders
-    document.getElementById('employeePhoto').src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' fill='%23e0e0e0'/%3E%3Ctext x='100' y='100' font-family='Arial' font-size='16' fill='%23999' text-anchor='middle' dominant-baseline='middle'%3E2x2 Photo%3C/text%3E%3C/svg%3E";
+    document.getElementById('employeePhoto').src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' fill='%23ffffff'/%3E%3C/svg%3E";
     document.getElementById('employeeSignature').src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='60' viewBox='0 0 200 60'%3E%3Ctext x='100' y='30' font-family='Arial' font-size='12' fill='%23999' text-anchor='middle' dominant-baseline='middle'%3E%3C/text%3E%3C/svg%3E";
     document.getElementById('managerSignature').src = "Jennifer Compania signature.png";
     document.getElementById('headSignature').src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='40' viewBox='0 0 150 40'%3E%3Ctext x='75' y='20' font-family='Arial' font-size='10' fill='%23999' text-anchor='middle' dominant-baseline='middle'%3E%3C/text%3E%3C/svg%3E";
@@ -338,11 +378,26 @@ function updateTable() {
             <td>${record.emergencyPhone}</td>
             <td>
                 <button class="btn-load" onclick="loadRecord(${index})">Load</button>
-                <button class="btn-download-record" onclick="downloadRecordFromTable(${index})">Download</button>
-                <button class="btn-delete" onclick="deleteRecord(${index})">Delete</button>
+                <button class="btn-download-record" onclick="downloadRecordFromTable(${index})">DL</button>
+                <button class="btn-delete" onclick="deleteRecord(${index})">Del</button>
             </td>
         `;
         tbody.appendChild(tr);
+    });
+}
+
+function filterRecords() {
+    const query = document.getElementById('searchRecords').value.toLowerCase();
+    const rows = document.querySelectorAll('#idRecordsBody tr');
+
+    rows.forEach(row => {
+        const idText = row.cells[0].textContent.toLowerCase();
+        const nameText = row.cells[1].textContent.toLowerCase();
+        if (idText.includes(query) || nameText.includes(query)) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
     });
 }
 
@@ -421,7 +476,13 @@ function loadRecord(index) {
     document.getElementById('emergencyContact').value = record.emergencyContact;
     document.getElementById('emergencyPhone').value = record.emergencyPhone;
     document.getElementById('employeePhoto').src = record.photo;
-    document.getElementById('employeeSignature').src = record.signature;
+    
+    // Auto-clean signature background if it's an imported file path
+    if (record.signature && (record.signature.includes('_signature/') || record.signature.endsWith('.png'))) {
+        processSignatureImage(record.signature, 'employeeSignature');
+    } else {
+        document.getElementById('employeeSignature').src = record.signature;
+    }
     if (record.managerSignature) document.getElementById('managerSignature').src = record.managerSignature;
     if (record.headSignature) document.getElementById('headSignature').src = record.headSignature;
 
@@ -460,11 +521,34 @@ async function deleteRecord(index) {
     }
 }
 
+async function deleteAllRecords() {
+    if (savedRecords.length === 0) {
+        showNotification('No records to delete.');
+        return;
+    }
+
+    if (confirm('Are you SURE you want to delete ALL records? This action cannot be undone!')) {
+        savedRecords = [];
+        localStorage.setItem('idRecords', JSON.stringify(savedRecords));
+        updateTable();
+        showNotification('All records deleted!');
+    }
+}
+
 // Auto-update card on input change
 document.getElementById('employeeName').addEventListener('input', updateCard);
 document.getElementById('idNumber').addEventListener('input', updateCard);
 document.getElementById('emergencyContact').addEventListener('input', updateCard);
 document.getElementById('emergencyPhone').addEventListener('input', updateCard);
+
+// Handle Enter key for quick saving
+['employeeName', 'idNumber', 'emergencyContact', 'emergencyPhone'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            saveRecord();
+        }
+    });
+});
 
 // Google Apps Script URL is now handled in the backend variable SCRIPT_URL
 
@@ -497,6 +581,202 @@ function applyPrintSettings() {
     root.style.setProperty('--page-orientation', orientation);
 
     showNotification('Print settings applied!');
+}
+
+// Print Current record from form (even if unsaved)
+function printCurrent(side) {
+    const record = {
+        name: document.getElementById('employeeName').value,
+        idNumber: document.getElementById('idNumber').value,
+        emergencyContact: document.getElementById('emergencyContact').value,
+        emergencyPhone: document.getElementById('emergencyPhone').value,
+        photo: document.getElementById('employeePhoto').src,
+        signature: document.getElementById('employeeSignature').src,
+        managerSignature: document.getElementById('managerSignature').src,
+        headSignature: document.getElementById('headSignature').src
+    };
+
+    if (!record.idNumber) {
+        alert('Please enter an ID Number.');
+        return;
+    }
+
+    if (!record.name) {
+        // Allow blank name for stock cards
+        record.name = " ";
+    }
+
+    // Temporary mock for printSingle logic
+    const printArea = document.getElementById('print-area');
+    printArea.innerHTML = '';
+    const page = document.createElement('div');
+    page.className = 'print-page';
+
+    if (side === 'front') {
+        for (let i = 0; i < 4; i++) {
+            const fCard = createPrintCard(record, 'front', `current-${i}`);
+            page.appendChild(fCard);
+        }
+        printArea.appendChild(page);
+        setTimeout(() => {
+            for (let i = 0; i < 4; i++) {
+                const el = document.querySelector(`.print-barcode-current-${i}`);
+                if (el) {
+                    JsBarcode(el, record.idNumber, {
+                        format: "CODE128", lineColor: "#000", width: 1.5, height: 25, displayValue: false, margin: 0, background: "transparent"
+                    });
+                }
+            }
+            window.print();
+        }, 500);
+    } else {
+        for (let i = 0; i < 4; i++) {
+            const bCard = createPrintCard(record, 'back', `current-back-${i}`);
+            page.appendChild(bCard);
+        }
+        printArea.appendChild(page);
+        setTimeout(() => { window.print(); }, 500);
+    }
+}
+
+// Bulk Incremental Printing Logic
+async function printBulk(side) {
+    const startId = document.getElementById('idNumber').value;
+    const count = parseInt(document.getElementById('bulkCount').value, 10);
+
+    if (!startId) {
+        alert('Please enter a starting ID Number.');
+        return;
+    }
+
+    if (isNaN(count) || count <= 0) {
+        alert('Please enter a valid number of IDs to print.');
+        return;
+    }
+
+    const printArea = document.getElementById('print-area');
+    printArea.innerHTML = '';
+
+    const recordTemplate = {
+        name: document.getElementById('employeeName').value || " ",
+        emergencyContact: document.getElementById('emergencyContact').value || " ",
+        emergencyPhone: document.getElementById('emergencyPhone').value || " ",
+        photo: document.getElementById('employeePhoto').src,
+        signature: document.getElementById('employeeSignature').src,
+        managerSignature: document.getElementById('managerSignature').src,
+        headSignature: document.getElementById('headSignature').src
+    };
+
+    let currentId = startId;
+    const idList = [];
+    for (let i = 0; i < count; i++) {
+        idList.push(currentId);
+        currentId = incrementIdNumber(currentId);
+    }
+
+    // Process in chunks of 4
+    for (let i = 0; i < count; i += 4) {
+        const pageIds = idList.slice(i, i + 4);
+        const page = document.createElement('div');
+        page.className = 'print-page';
+
+        if (side === 'front') {
+            pageIds.forEach((id, index) => {
+                const record = { ...recordTemplate, idNumber: id };
+                const card = createPrintCard(record, 'front', `bulk-${i + index}`);
+                page.appendChild(card);
+            });
+            // Fill remaining blanks
+            for (let j = pageIds.length; j < 4; j++) {
+                const empty = document.createElement('div');
+                empty.className = 'id-card empty';
+                empty.style.visibility = 'hidden';
+                page.appendChild(empty);
+            }
+        } else {
+            // Mirroring logic for back side: [1, 0, 3, 2]
+            const backIndices = [1, 0, 3, 2];
+            backIndices.forEach(idx => {
+                if (idx < pageIds.length) {
+                    const record = { ...recordTemplate, idNumber: pageIds[idx] };
+                    const card = createPrintCard(record, 'back', `bulk-back-${i + idx}`);
+                    page.appendChild(card);
+                } else if (idx < 4) {
+                    const empty = document.createElement('div');
+                    empty.className = 'id-card empty';
+                    empty.style.visibility = 'hidden';
+                    page.appendChild(empty);
+                }
+            });
+        }
+        printArea.appendChild(page);
+    }
+
+    // Handle Barcode Generation for Fronts
+    if (side === 'front') {
+        setTimeout(() => {
+            idList.forEach((id, index) => {
+                const el = document.querySelector(`.print-barcode-bulk-${index}`);
+                if (el) {
+                    JsBarcode(el, id, {
+                        format: "CODE128", lineColor: "#000", width: 1.5, height: 25, displayValue: false, margin: 0, background: "transparent"
+                    });
+                }
+            });
+            window.print();
+        }, 800);
+    } else {
+        setTimeout(() => { window.print(); }, 500);
+    }
+}
+
+// Print Single Record Functionality
+function printSingle(index, side) {
+    const record = savedRecords[index];
+    if (!record) return;
+
+    // Create a virtual batch of 1
+    const printArea = document.getElementById('print-area');
+    printArea.innerHTML = '';
+
+    const page = document.createElement('div');
+    page.className = 'print-page';
+
+    if (side === 'front') {
+        // Fill 4 copies of the front on one A4 page
+        for (let i = 0; i < 4; i++) {
+            const fCard = createPrintCard(record, 'front', `single-${i}`);
+            page.appendChild(fCard);
+        }
+        printArea.appendChild(page);
+
+        // Finalize barcodes
+        setTimeout(() => {
+            for (let i = 0; i < 4; i++) {
+                const el = document.querySelector(`.print-barcode-single-${i}`);
+                if (el) {
+                    JsBarcode(el, record.idNumber, {
+                        format: "CODE128",
+                        lineColor: "#000",
+                        width: 1.5,
+                        height: 40,
+                        displayValue: false,
+                        margin: 0,
+                        background: "transparent"
+                    });
+                }
+            }
+            window.print();
+        }, 500);
+    } else {
+        // Fill 4 copies of the back on one A4 page
+        for (let i = 0; i < 4; i++) {
+            const bCard = createPrintCard(record, 'back', `single-back-${i}`);
+            page.appendChild(bCard);
+        }
+        printArea.appendChild(page);
+        setTimeout(() => { window.print(); }, 500);
+    }
 }
 
 // Print Batch Functionality (front, back)
@@ -548,39 +828,38 @@ function printBatch(side) {
             });
             printArea.appendChild(backPage);
         }
-
-        // Generate barcodes for fronts if applicable
-        if (side === 'front') {
-            setTimeout(() => {
-                chunk.forEach((record, index) => {
-                    const barcodeSelector = `.print-barcode-${i + index}`;
-                    const elements = document.querySelectorAll(barcodeSelector);
-                    elements.forEach(el => {
-                        JsBarcode(el, record.idNumber, {
-                            format: "CODE128",
-                            lineColor: "#000",
-                            width: 1.5,
-                            height: 40,
-                            displayValue: false,
-                            margin: 0,
-                            background: "transparent"
-                        });
-                    });
-                });
-            }, 100);
-        }
     }
 
-    // Give time for barcodes to render before printing
-    setTimeout(() => {
-        window.print();
-    }, 500);
+    // Finalize barcodes for batch fronts
+    if (side === 'front') {
+        setTimeout(() => {
+            savedRecords.forEach((record, index) => {
+                const elements = document.querySelectorAll(`.print-barcode-${index}`);
+                elements.forEach(el => {
+                    JsBarcode(el, record.idNumber, {
+                        format: "CODE128",
+                        lineColor: "#000",
+                        width: 1.5,
+                        height: 25,
+                        displayValue: false,
+                        margin: 0,
+                        background: "transparent"
+                    });
+                });
+            });
+            window.print();
+        }, 600);
+    } else {
+        setTimeout(() => {
+            window.print();
+        }, 500);
+    }
 }
 
 function createPrintCard(record, side, uniqueId) {
     const card = document.createElement('div');
     card.className = `id-card ${side}`;
-    
+
     if (side === 'front') {
         card.innerHTML = `
             <div class="card-header">
@@ -653,4 +932,121 @@ function createPrintCard(record, side, uniqueId) {
         `;
     }
     return card;
+}
+
+function importCSV(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        const text = e.target.result;
+        parseAndSaveCSV(text);
+        // Clear input to allow importing the same file again if needed
+        event.target.value = '';
+    };
+    reader.readAsText(file, 'UTF-8');
+}
+
+function parseAndSaveCSV(csvText) {
+    // Split by any newline characters (Windows, Mac, or Linux style)
+    const rows = csvText.trim().split(/[\r\n]+/).filter(row => row.trim().length > 0);
+
+    if (rows.length < 2) {
+        alert("CSV import failed: The file must contain a header row and at least one data row. Rows found: " + rows.length);
+        console.log("CSV Content preview:", csvText.substring(0, 500));
+        return;
+    }
+
+    function parseCSVLine(line, delimiter = ',') {
+        const result = [];
+        let cur = '';
+        let inQuotes = false;
+        for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+            if (char === '"') {
+                inQuotes = !inQuotes;
+            } else if (char === delimiter && !inQuotes) {
+                result.push(cur.trim());
+                cur = '';
+            } else {
+                cur += char;
+            }
+        }
+        result.push(cur.trim());
+        return result;
+    }
+
+    // Attempt to auto-detect delimiter from the first row
+    let delimiter = ',';
+    if (rows[0].includes(';')) delimiter = ';';
+    else if (rows[0].includes('\t')) delimiter = '\t';
+
+    const headers = parseCSVLine(rows[0], delimiter).map(h => h.toUpperCase().replace(/^"|"$/g, ''));
+    let importedCount = 0;
+
+    for (let i = 1; i < rows.length; i++) {
+        // Skip empty lines
+        if (!rows[i].trim()) continue;
+
+        const columns = parseCSVLine(rows[i], delimiter).map(c => c.replace(/^"|"$/g, ''));
+
+        const record = {
+            idNumber: '',
+            name: '',
+            emergencyContact: '',
+            emergencyPhone: '',
+            photo: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' fill='%23ffffff'/%3E%3C/svg%3E",
+            signature: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='60' viewBox='0 0 200 60'%3E%3Ctext x='100' y='30' font-family='Arial' font-size='12' fill='%23999' text-anchor='middle' dominant-baseline='middle'%3E%3C/text%3E%3C/svg%3E",
+            managerSignature: "Jennifer Compania signature.png",
+            headSignature: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='40' viewBox='0 0 150 40'%3E%3Ctext x='75' y='20' font-family='Arial' font-size='10' fill='%23999' text-anchor='middle' dominant-baseline='middle'%3E%3C/text%3E%3C/svg%3E"
+        };
+
+        headers.forEach((header, index) => {
+            const val = columns[index] || '';
+            if (header.includes('ID NUMBER') || header === 'ID') record.idNumber = val;
+            if (header.includes("TELLER'S NAME") || header.includes('NAME')) record.name = val;
+            if (header.includes('CONTACT PERSON')) record.emergencyContact = val;
+            if (header.includes('CONTACT #') || header.includes('CONTACT INFO')) record.emergencyPhone = val;
+            if (header.includes('PHOTO')) record.photo = val;
+            if (header.includes('SIGNATURE')) record.signature = val;
+        });
+
+        // Auto-match photos and signatures if not explicitly provided in CSV
+        if (record.name && record.idNumber && (record.photo.startsWith('data:image/svg+xml') || record.signature.startsWith('data:image/svg+xml'))) {
+            const isIligan = record.idNumber.startsWith('ILI-');
+            const isLanao = record.idNumber.startsWith('LA-') || record.idNumber.startsWith('LDN-') || record.idNumber.startsWith('STB-');
+            
+            const folderPrefix = isIligan ? 'iligan' : (isLanao ? 'lanao' : '');
+            
+            if (folderPrefix) {
+                // Construct paths based on the folder structure
+                if (record.photo.startsWith('data:image/svg+xml')) {
+                    record.photo = `${folderPrefix}_2x2/${record.name}.png`;
+                }
+                if (record.signature.startsWith('data:image/svg+xml')) {
+                    record.signature = `${folderPrefix}_signature/${record.name}.png`;
+                }
+            }
+        }
+
+        if (record.idNumber) {
+            const idx = savedRecords.findIndex(r => r.idNumber === record.idNumber);
+            if (idx !== -1) {
+                savedRecords[idx].name = record.name || savedRecords[idx].name;
+                savedRecords[idx].emergencyContact = record.emergencyContact || savedRecords[idx].emergencyContact;
+                savedRecords[idx].emergencyPhone = record.emergencyPhone || savedRecords[idx].emergencyPhone;
+                savedRecords[idx].photo = record.photo !== "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' fill='%23ffffff'/%3E%3C/svg%3E" ? record.photo : savedRecords[idx].photo;
+                savedRecords[idx].signature = record.signature !== "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='60' viewBox='0 0 200 60'%3E%3Ctext x='100' y='30' font-family='Arial' font-size='12' fill='%23999' text-anchor='middle' dominant-baseline='middle'%3E%3C/text%3E%3C/svg%3E" ? record.signature : savedRecords[idx].signature;
+            } else {
+                // If it's totally new, push the entire record
+                savedRecords.push(record);
+            }
+            importedCount++;
+        }
+    }
+
+    localStorage.setItem('idRecords', JSON.stringify(savedRecords));
+    updateTable();
+    showNotification(`Successfully imported ${importedCount} records!`);
 }
