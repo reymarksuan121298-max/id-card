@@ -406,7 +406,7 @@ th {
     width: 205px;
     height: 205px;
     object-fit: cover;
-    border: 1.5px solid #000;
+    border: 1px solid #000;
     display: block;
     margin: 0 auto;
     background-color: white;
@@ -415,8 +415,8 @@ th {
 .barcode {
     background: white;
     padding: 0;
-    margin-top: -2px;
-    width: 200px;
+    margin: 4px auto 0;
+    width: 205px;
     overflow: hidden;
     display: flex;
     justify-content: center;
@@ -439,7 +439,7 @@ th {
 
 .name-section {
     text-align: center;
-    margin: 5px 0 5px 0;
+    margin: 10px 0 5px 0;
     padding: 0;
 }
 
@@ -452,7 +452,7 @@ th {
 }
 
 .name-value {
-    font-size: 18px;
+    font-size: 20px;
     font-weight: bold;
     color: #000;
     line-height: 1.1;
@@ -460,7 +460,7 @@ th {
     border-bottom: 1px solid #000;
     padding-bottom: 2px;
     display: inline-block;
-    min-width: 300px;
+    min-width: 320px;
 }
 
 .signature-section {
@@ -489,7 +489,7 @@ th {
     border-top: 1px solid #000;
     padding-top: 0;
     display: inline-block;
-    min-width: 300px;
+    min-width: 320px;
 }
 
 .position-badge {
@@ -800,8 +800,8 @@ th {
     }
 
     .print-page .barcode {
-        width: 45mm;
-        margin-top: -2px;
+        width: 54mm;
+        margin-top: 1mm;
     }
 
     .print-page #barcode {
@@ -813,6 +813,10 @@ th {
     }
 
     .print-page .name-section {
+        margin: 2mm 0;
+    }
+
+    .print-page .signature-section {
         margin: 1mm 0;
     }
 
@@ -829,6 +833,7 @@ th {
         width: 35mm;
         height: 10mm;
         margin-bottom: 0mm;
+        mix-blend-mode: multiply;
     }
 
     .print-page .signature-label {
@@ -915,6 +920,7 @@ th {
         width: 40mm;
         height: 12mm;
         margin-bottom: -3mm;
+        mix-blend-mode: multiply;
     }
 
     .print-page .cert-name {
